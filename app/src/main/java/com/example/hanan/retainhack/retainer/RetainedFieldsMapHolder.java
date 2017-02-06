@@ -5,18 +5,21 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by Hanan on 2/6/2017.
  */
 
 @SuppressLint("ValidFragment")
-class RetainedObjectHolder<T> extends Fragment {
+class RetainedFieldsMapHolder extends Fragment {
 
-    private T mRetainedObject;
+    private Map<String, Object> mMap;
 
-    RetainedObjectHolder(T retainedObject)
+    RetainedFieldsMapHolder()
     {
-        mRetainedObject = retainedObject;
+        mMap = new HashMap<>();
     }
 
     @Override
@@ -26,14 +29,9 @@ class RetainedObjectHolder<T> extends Fragment {
         setRetainInstance(true);
     }
 
-    T getRetainedObject()
+    public Map<String, Object> getMap()
     {
-        return mRetainedObject;
-    }
-
-    void setRetainedObject(T retainedObject)
-    {
-        mRetainedObject = retainedObject;
+        return mMap;
     }
 
 }

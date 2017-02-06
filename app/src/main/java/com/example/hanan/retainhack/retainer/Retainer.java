@@ -5,8 +5,6 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by Hanan on 2/6/2017.
@@ -28,24 +26,35 @@ public class Retainer {
     {
         try
         {
-            RetainedObjectHolder<Map<String, Object>> retainedFieldsHolder = (RetainedObjectHolder) manager.findFragmentByTag(target.getClass().getName());
-            if (retainedFieldsHolder != null)
+            RetainedFieldsMapHolder retainedFieldsHolder = getHolder(target, manager);
+            if (retainedFieldsHolder == null)
             {
+                //Nothing to restore, just add holder for next time
+                retainedFieldsHolder = new RetainedFieldsMapHolder();
+                manager.beginTransaction().add(retainedFieldsHolder, target.getClass().getName()).commitNow();
+            }
+            else
+            {
+                //Restore all fields from mapping
                 for (Field field : target.getClass().getDeclaredFields())
                 {
                     if (field.getAnnotation(Retain.class) != null)
                     {
                         field.setAccessible(true);
-                        field.set(target, retainedFieldsHolder.getRetainedObject().get(field.getName()));
+                        field.set(target, retainedFieldsHolder.getMap().get(field.getName()));
                     }
                 }
-                manager.beginTransaction().remove(retainedFieldsHolder).commitNow();
             }
         }
         catch (IllegalAccessException e)
         {
             throw new RetainerException(e);
         }
+    }
+
+    private static RetainedFieldsMapHolder getHolder(Object target, FragmentManager manager)
+    {
+        return (RetainedFieldsMapHolder) manager.findFragmentByTag(target.getClass().getName());
     }
 
     public static void retain(FragmentActivity activity)
@@ -62,17 +71,14 @@ public class Retainer {
     {
         try
         {
-            Map<String, Object> fieldsValues = new HashMap<>();
+            RetainedFieldsMapHolder holder = getHolder(target, manager);
             for (Field field : target.getClass().getDeclaredFields())
             {
                 if (field.getAnnotation(Retain.class) != null)
                 {
                     field.setAccessible(true);
-                    fieldsValues.put(field.getName(), field.get(target));
+                    holder.getMap().put(field.getName(), field.get(target));
                 }
-                manager.beginTransaction()
-                        .add(new RetainedObjectHolder<>(fieldsValues), target.getClass().getName())
-                        .commitNow();
             }
         }
         catch (IllegalAccessException e)
