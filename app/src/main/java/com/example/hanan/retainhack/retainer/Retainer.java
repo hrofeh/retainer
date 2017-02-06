@@ -39,6 +39,7 @@ public class Retainer {
                         field.set(target, retainedFieldsHolder.getRetainedObject().get(field.getName()));
                     }
                 }
+                manager.beginTransaction().remove(retainedFieldsHolder).commitNow();
             }
         }
         catch (IllegalAccessException e)
