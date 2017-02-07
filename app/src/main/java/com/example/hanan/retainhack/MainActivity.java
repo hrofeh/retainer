@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Retainer.restore(this, getSupportFragmentManager());
+        Retainer.restore(this);
         Toast.makeText(this, mRetainedUser != null ? mRetainedUser.getFirstName() + mNumber : "Empty", Toast.LENGTH_SHORT).show();
     }
 
@@ -36,6 +36,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy()
     {
         super.onDestroy();
-        Retainer.retain(this, getSupportFragmentManager());
+        Retainer.retain(this);
     }
 }

@@ -1,5 +1,7 @@
 package com.retainer;
 
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 
 import java.util.HashMap;
@@ -13,6 +15,16 @@ public class Retainer {
 
     private static Map<String, IClassRetainer<?>> mClassNameToRetainer = new HashMap<>();
 
+    public static void restore(FragmentActivity target)
+    {
+        restore(target, target.getSupportFragmentManager());
+    }
+
+    public static void restore(Fragment target)
+    {
+        restore(target, target.getFragmentManager());
+    }
+
     public static <T> void restore(T target, FragmentManager manager)
     {
         IClassRetainer<T> retainerForClass = findOrCreateRetainerForClass(target);
@@ -20,6 +32,16 @@ public class Retainer {
         {
             retainerForClass.restore(target, manager);
         }
+    }
+
+    public static void retain(FragmentActivity target)
+    {
+        retain(target, target.getSupportFragmentManager());
+    }
+
+    public static void retain(Fragment target)
+    {
+        retain(target, target.getFragmentManager());
     }
 
     public static <T> void retain(T target, FragmentManager manager)
