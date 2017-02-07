@@ -1,4 +1,4 @@
-package com.example.hanan.retainhack.retainer;
+package com.retainer;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
@@ -13,11 +13,11 @@ import java.util.Map;
  */
 
 @SuppressLint("ValidFragment")
-class RetainedFieldsMapHolder extends Fragment {
+public class RetainedFieldsMapHolder extends Fragment {
 
     private Map<String, Object> mMap;
 
-    RetainedFieldsMapHolder()
+    public RetainedFieldsMapHolder()
     {
         mMap = new HashMap<>();
     }

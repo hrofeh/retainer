@@ -5,16 +5,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.hanan.retainhack.retainer.Retain;
-import com.example.hanan.retainhack.retainer.Retainer;
+import com.retainer.Retain;
 
 public class MainActivity extends AppCompatActivity {
 
     @Retain
-    private User mRetainedUser;
+    User mRetainedUser;
 
     @Retain
-    private int mNumber;
+    int mNumber;
 
 
     @Override
@@ -22,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Retainer.restore(this);
+        MainActivityRetainer.restore(this, getSupportFragmentManager());
         Toast.makeText(this, mRetainedUser != null ? mRetainedUser.getFirstName() + mNumber : "Empty", Toast.LENGTH_SHORT).show();
     }
 
@@ -33,9 +32,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState)
+    protected void onDestroy()
     {
-        Retainer.retain(this);
-        super.onSaveInstanceState(outState);
+        super.onDestroy();
+        MainActivityRetainer.retain(this, getSupportFragmentManager());
     }
 }
