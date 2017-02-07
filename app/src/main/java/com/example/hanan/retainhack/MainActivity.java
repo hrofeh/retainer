@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.retainer.Retain;
+import com.retainer.Retainer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        MainActivityRetainer.restore(this, getSupportFragmentManager());
+        Retainer.restore(this, getSupportFragmentManager());
         Toast.makeText(this, mRetainedUser != null ? mRetainedUser.getFirstName() + mNumber : "Empty", Toast.LENGTH_SHORT).show();
     }
 
@@ -35,6 +36,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy()
     {
         super.onDestroy();
-        MainActivityRetainer.retain(this, getSupportFragmentManager());
+        Retainer.retain(this, getSupportFragmentManager());
     }
 }

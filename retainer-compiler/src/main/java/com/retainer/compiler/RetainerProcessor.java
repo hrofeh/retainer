@@ -1,10 +1,12 @@
 package com.retainer.compiler;
 
 import com.google.auto.service.AutoService;
+import com.retainer.Constants;
 import com.retainer.Retain;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
@@ -26,8 +28,6 @@ import javax.lang.model.element.TypeElement;
 
 @AutoService(Processor.class)
 public class RetainerProcessor extends AbstractProcessor {
-
-    private static final String GEN_CLASS_SUFFIX = "Retainer";
 
     //Methods
     private static final String METHOD_RESTORE = "restore";
@@ -96,20 +96,20 @@ public class RetainerProcessor extends AbstractProcessor {
 
     private void createRetainerForClass(String packageName, String className, List<Element> elements)
     {
-        String generatedClassName = className + GEN_CLASS_SUFFIX;
+        String generatedClassName = className + Constants.GEN_CLASS_NAME_SUFFIX;
         List<MethodSpec> methodSpecList = new ArrayList<>();
         addRestoreMethod(packageName, className, methodSpecList, elements);
         addRetainMethod(packageName, className, methodSpecList, elements);
-        addHolderGetterMethod(methodSpecList);
-        generateClass(packageName, generatedClassName, methodSpecList);
+        generateRetainerClass(packageName, className, generatedClassName, methodSpecList);
     }
 
 
     private void addRetainMethod(String packageName, String className, List<MethodSpec> methodSpecList, List<Element> elements)
     {
         MethodSpec.Builder retainBuilder = retainerMethod(METHOD_RETAIN, packageName, className)
-                .addStatement(String.format("RetainedFieldsMapHolder %s = getHolder(%s,%s)",
-                        VAR_HOLDER, PAR_TARGET, PAR_FRAGMENT_MANAGER))
+                .addStatement(String.format("RetainedFieldsMapHolder %s = " +
+                                "(RetainedFieldsMapHolder) %s.findFragmentByTag(%s.getClass().getName())",
+                        VAR_HOLDER, PAR_FRAGMENT_MANAGER, PAR_TARGET))
                 .beginControlFlow(String.format("if (%s!=null)", VAR_HOLDER));
         for (Element element : elements)
         {
@@ -120,21 +120,11 @@ public class RetainerProcessor extends AbstractProcessor {
         methodSpecList.add(retainBuilder.build());
     }
 
-    private void addHolderGetterMethod(List<MethodSpec> methodSpecList)
-    {
-        methodSpecList.add(MethodSpec.methodBuilder("getHolder")
-                .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
-                .returns(TYPE_RETAINED_FIELDS_MAP_HOLDER)
-                .addParameter(TypeName.OBJECT, PAR_TARGET)
-                .addParameter(TYPE_FRAGMENT_MANAGER, PAR_FRAGMENT_MANAGER)
-                .addStatement(String.format("return (RetainedFieldsMapHolder) %s.findFragmentByTag(%s.getClass().getName())", PAR_FRAGMENT_MANAGER, PAR_TARGET))
-                .build());
-    }
-
     private void addRestoreMethod(String packageName, String className, List<MethodSpec> methodSpecList, List<Element> elements)
     {
         MethodSpec.Builder retainBuilder = retainerMethod(METHOD_RESTORE, packageName, className)
-                .addStatement(String.format("RetainedFieldsMapHolder %s = getHolder(%s,%s)", VAR_HOLDER, PAR_TARGET, PAR_FRAGMENT_MANAGER))
+                .addStatement(String.format("RetainedFieldsMapHolder %s = " +
+                        "($T) %s.findFragmentByTag(%s.getClass().getName())", VAR_HOLDER, PAR_FRAGMENT_MANAGER, PAR_TARGET), TYPE_RETAINED_FIELDS_MAP_HOLDER)
                 .beginControlFlow(String.format("if (%s == null)", VAR_HOLDER))
                 .addComment("Nothing to restore, just add holder for next time")
                 .addStatement(String.format("%s = new RetainedFieldsMapHolder()", VAR_HOLDER))
@@ -144,8 +134,8 @@ public class RetainerProcessor extends AbstractProcessor {
                 .addComment("Restore all fields from mapping");
         for (Element element : elements)
         {
-            retainBuilder.addStatement(String.format("%s.%s = (%s) %s.getMap().get(\"%s\")",
-                    PAR_TARGET, element.getSimpleName(), element.asType(), VAR_HOLDER, element.getSimpleName()));
+            retainBuilder.addStatement(String.format("%s.%s = ($T) %s.getMap().get(\"%s\")",
+                    PAR_TARGET, element.getSimpleName(), VAR_HOLDER, element.getSimpleName()), element.asType());
         }
         retainBuilder.endControlFlow();
         methodSpecList.add(retainBuilder.build());
@@ -154,16 +144,19 @@ public class RetainerProcessor extends AbstractProcessor {
     private MethodSpec.Builder retainerMethod(String name, String packageName, String className)
     {
         return MethodSpec.methodBuilder(name)
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addAnnotation(Override.class)
                 .returns(TypeName.VOID)
                 .addParameter(ClassName.get(packageName, className), PAR_TARGET)
                 .addParameter(TYPE_FRAGMENT_MANAGER, PAR_FRAGMENT_MANAGER);
     }
 
-    private void generateClass(String packageName, String className, List<MethodSpec> methodSpecs)
+    private void generateRetainerClass(String packageName, String forClass, String className, List<MethodSpec> methodSpecs)
     {
         TypeSpec typeSpec = TypeSpec.classBuilder(className)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addSuperinterface(ParameterizedTypeName.get(ClassName.get("com.retainer", "IClassRetainer"),
+                        ClassName.get(packageName, forClass)))
                 .addMethods(methodSpecs).build();
         try
         {
