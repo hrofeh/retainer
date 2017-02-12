@@ -3,6 +3,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: "com.jfrog.bintray"
 
 version = VERSION_NAME
+group= GROUP
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -57,6 +58,15 @@ install {
                     connection GIT_URL
                     developerConnection GIT_URL
                     url SITE_URL
+                }
+            }
+
+            whenConfigured { pom ->
+                pom.dependencies.forEach { dep ->
+                    if (dep.getVersion() == "unspecified" && dep.groupId == rootProject.name) {
+                        dep.setGroupId(GROUP)
+                        dep.setVersion(VERSION_NAME)
+                    }
                 }
             }
         }

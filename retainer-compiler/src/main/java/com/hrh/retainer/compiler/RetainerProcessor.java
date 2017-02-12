@@ -1,8 +1,7 @@
-package com.retainer.compiler;
+package com.hrh.retainer.compiler;
 
 import com.google.auto.service.AutoService;
-import com.retainer.Constants;
-import com.retainer.Retain;
+import com.hrh.retainer.Retain;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -35,7 +34,7 @@ public class RetainerProcessor extends AbstractProcessor {
 
     //Types
     private static final ClassName TYPE_FRAGMENT_MANAGER = ClassName.get("android.support.v4.app", "FragmentManager");
-    private static final ClassName TYPE_RETAINED_FIELDS_MAP_HOLDER = ClassName.get("com.retainer", "RetainedFieldsMapHolder");
+    private static final ClassName TYPE_RETAINED_FIELDS_MAP_HOLDER = ClassName.get("com.hrh.retainer", "RetainedFieldsMapHolder");
 
     //Parameters
     private static final String PAR_TARGET = "target";
@@ -96,7 +95,7 @@ public class RetainerProcessor extends AbstractProcessor {
 
     private void createRetainerForClass(String packageName, String className, List<Element> elements)
     {
-        String generatedClassName = className + Constants.GEN_CLASS_NAME_SUFFIX;
+        String generatedClassName = className + "Retainer";
         List<MethodSpec> methodSpecList = new ArrayList<>();
         addRestoreMethod(packageName, className, methodSpecList, elements);
         addRetainMethod(packageName, className, methodSpecList, elements);
@@ -155,7 +154,7 @@ public class RetainerProcessor extends AbstractProcessor {
     {
         TypeSpec typeSpec = TypeSpec.classBuilder(className)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addSuperinterface(ParameterizedTypeName.get(ClassName.get("com.retainer", "IClassRetainer"),
+                .addSuperinterface(ParameterizedTypeName.get(ClassName.get("com.hrh.retainer", "IClassRetainer"),
                         ClassName.get(packageName, forClass)))
                 .addMethods(methodSpecs).build();
         try

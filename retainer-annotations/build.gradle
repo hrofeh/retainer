@@ -3,8 +3,6 @@ apply plugin: "com.jfrog.bintray"
 apply plugin: 'maven-publish'
 apply plugin: 'maven'
 
-version = VERSION_NAME
-
 sourceCompatibility = rootProject.ext.sourceCompatibilityVersion
 targetCompatibility = rootProject.ext.targetCompatibilityVersion
 
@@ -51,7 +49,7 @@ bintray {
         repo = REP
         name = POM_ARTIFACT_ID
         licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/newfivefour/jerseyjsonwadl.git'
+        vcsUrl = GIT_URL
         version {
             name = VERSION_NAME
             desc = POM_DESCRIPTION

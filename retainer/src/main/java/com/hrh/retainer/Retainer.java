@@ -1,4 +1,4 @@
-package com.retainer;
+package com.hrh.retainer;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -56,7 +56,7 @@ public class Retainer {
     @SuppressWarnings("unchecked")
     private static <T> IClassRetainer<T> findOrCreateRetainerForClass(T target)
     {
-        String retainerClassName = target.getClass().getSimpleName() + Constants.GEN_CLASS_NAME_SUFFIX;
+        String retainerClassName = target.getClass().getSimpleName() + "Retainer";
         try
         {
             IClassRetainer<T> retainer = (IClassRetainer<T>) mClassNameToRetainer.get(retainerClassName);
