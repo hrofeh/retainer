@@ -6,11 +6,40 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.0-beta3'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
 }
+
+ext {
+    minSdkVersion = 15
+    targetSdkVersion = 25
+    compileSdkVersion = 25
+    buildToolsVersion = '25.0.0'
+    sourceCompatibilityVersion = JavaVersion.VERSION_1_7
+    targetCompatibilityVersion = JavaVersion.VERSION_1_7
+}
+
+def supportLibraryVersion = '25.1.0'
+def retainerVersion = '0.0.3'
+
+ext.deps = [
+        // Android
+        android: 'com.google.android:android:4.1.1.4',
+        supportCompat: "com.android.support:appcompat-v7:$supportLibraryVersion",
+
+        // Square
+        javapoet: 'com.squareup:javapoet:1.8.0',
+        autoservice: 'com.google.auto.service:auto-service:1.0-rc2',
+
+        retainer: "com.hrh.retainer:$retainerVersion",
+        retainerCompiler: "com.hrh.retainer-compiler:$retainerVersion"
+]
+
+
 
 allprojects {
     repositories {

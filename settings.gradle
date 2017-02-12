@@ -1,1 +1,1 @@
-include ':app', ':retainer-compiler', ':retainer-annotations', ':retainer'
+include ':retainer-compiler', ':retainer-annotations', ':retainer'
