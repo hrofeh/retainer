@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,10 +7,12 @@
     android:layout_height="match_parent"
     tools:context="com.example.hanan.retainhack.MainActivity">
 
-    <Button
+    <TextView
+        android:id="@+id/text"
         android:layout_width="wrap_content"
-        android:text="Set"
-        android:onClick="setVar"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textColor="@android:color/black"
+        android:textSize="40sp"/>
 
-</android.support.constraint.ConstraintLayout>
+</FrameLayout>

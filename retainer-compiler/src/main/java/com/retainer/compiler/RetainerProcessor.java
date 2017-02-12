@@ -130,7 +130,7 @@ public class RetainerProcessor extends AbstractProcessor {
                 .addStatement(String.format("%s = new RetainedFieldsMapHolder()", VAR_HOLDER))
                 .addStatement(String.format("%s.beginTransaction().add(%s, target.getClass().getName()).commitNow()", PAR_FRAGMENT_MANAGER, VAR_HOLDER))
                 .endControlFlow()
-                .beginControlFlow("else")
+                .beginControlFlow(String.format("else if (!%s.getMap().isEmpty())", VAR_HOLDER))
                 .addComment("Restore all fields from mapping");
         for (Element element : elements)
         {
