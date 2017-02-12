@@ -125,12 +125,12 @@ public class RetainerProcessor extends AbstractProcessor {
                 .addStatement(String.format("RetainedFieldsMapHolder %s = " +
                         "($T) %s.findFragmentByTag(%s.getClass().getName())", VAR_HOLDER, PAR_FRAGMENT_MANAGER, PAR_TARGET), TYPE_RETAINED_FIELDS_MAP_HOLDER)
                 .beginControlFlow(String.format("if (%s == null)", VAR_HOLDER))
-                .addComment("Nothing to restore, just add holder for next time")
+                .addCode("//Nothing to restore, just add holder for next time\n")
                 .addStatement(String.format("%s = new RetainedFieldsMapHolder()", VAR_HOLDER))
                 .addStatement(String.format("%s.beginTransaction().add(%s, target.getClass().getName()).commitNow()", PAR_FRAGMENT_MANAGER, VAR_HOLDER))
                 .endControlFlow()
                 .beginControlFlow(String.format("else if (!%s.getMap().isEmpty())", VAR_HOLDER))
-                .addComment("Restore all fields from mapping");
+                .addCode("//Restore all fields from mapping\n");
         for (Element element : elements)
         {
             retainBuilder.addStatement(String.format("%s.%s = ($T) %s.getMap().get(\"%s\")",

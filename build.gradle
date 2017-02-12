@@ -23,15 +23,13 @@ ext {
     targetCompatibilityVersion = JavaVersion.VERSION_1_7
 }
 
-def version = VERSION_NAME
-
 ext.deps = [
         // Android
         android: 'com.google.android:android:4.1.1.4',
         supportCompat: "com.android.support:appcompat-v7:25.1.0",
 
         // Square
-        javapoet: 'com.squareup:javapoet:1.8.0',
+        javapoet: 'com.squareup:javapoet:1.7.0',
         autoservice: 'com.google.auto.service:auto-service:1.0-rc2',
 
 ]
