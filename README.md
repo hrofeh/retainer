@@ -1,16 +1,16 @@
 Retainer
 ============
-Activity/fragment fields retention through configuration changes library which uses annotation processing to generate boilerplate
-code for you.
+An android library which enables activity/fragment fields retention through configuration changes (e.g screen rotatio) by generating boilerplate code for you.
 
  * Retain any object and maintain reference through configuration changes (no need for slow serialization-deserialization process).
+ * Makes MVVM implemntation cleaner and shorter by retaining the ViewModel.
  * Simple and straight forward use.
 
 ```java
 class MainActivity extends AppCompatActivity{
 
     @Retain
-    User mUser;
+    ViewModel mViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -38,6 +38,16 @@ dependencies {
   annotationProcessor 'com.hrh:retainer-compiler:[latest-version]'
 }
 ```
+
+How does it work
+--------
+Retainer creates and handles an headless retained fragment which wraps a mapping of all your @Retain fields, as simple as that.
+
+In order to keep runtime impact minimal, Retainer uses mostly code generation while reflection is only used for constructing and caching a retainer object for your activity/fragment when it is first created.
+
+Watch out for memory (especially context) leaks
+--------
+Marking an non-primitive field as @Retained means it won't be released when a configuration change occures, watch out for memory leaks and never retain an activity/fragment or an object holding a refernce to one.
 
 License
 -------
