@@ -51,6 +51,11 @@ Marking an non-primitive field as @Retained means it won't be released when a co
 Although Retainer makes sure at compile time that non of your @Retain fields is or is a subclass of Context, you should
 watch out for memory leaks and never retain an object holding a refernce to an android Context.
 
+When not to use
+--------
+Retainer is useful only in cases where your activty/fragment is destroyed due to a configuration change.
+If you wish to retain fields for an activity/fragment which is recreated after being destroyed by the OS then you should use the plain old savedInstanceState; I recommend taking a look at [IcePick](https://github.com/frankiesardo/icepick)
+
 License
 -------
 
