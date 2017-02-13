@@ -1,9 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
-apply plugin: "com.jfrog.bintray"
-
-version = VERSION_NAME
-group= GROUP
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -14,6 +9,10 @@ android {
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
+    }
+    compileOptions{
+        sourceCompatibility = rootProject.ext.sourceCompatibilityVersion
+        targetCompatibility = rootProject.ext.targetCompatibilityVersion
     }
     buildTypes {
         release {

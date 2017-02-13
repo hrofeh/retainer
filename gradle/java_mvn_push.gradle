@@ -25,6 +25,9 @@ publishing {
             groupId = GROUP
             artifactId = POM_ARTIFACT_ID
             version = VERSION_NAME
+
+            artifact(sourcesJar)
+            artifact(javadocJar)
         }
     }
 }
