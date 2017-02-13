@@ -47,7 +47,8 @@ In order to keep runtime impact minimal, Retainer uses mostly code generation wh
 
 Watch out for memory (especially context) leaks
 --------
-Marking an non-primitive field as @Retained means it won't be released when a configuration change occures, watch out for memory leaks and never retain an activity/fragment or an object holding a refernce to one.
+Marking an non-primitive field as @Retained means it won't be released when a configuration change occures.
+Watch out for memory leaks and never retain an activity/fragment or an object holding a refernce to one.
 
 License
 -------
