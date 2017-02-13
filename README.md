@@ -1,5 +1,6 @@
 Retainer
 ============
+![Logo](logo.png)
 An android library which enables activity/fragment fields retention through configuration changes (e.g screen rotatio) by generating boilerplate code for you.
 
  * Retain any object and maintain reference through configuration changes (no need for slow serialization-deserialization process).
@@ -45,10 +46,16 @@ Retainer creates and handles an headless retained fragment which wraps a mapping
 
 In order to keep runtime impact minimal, Retainer uses mostly code generation while reflection is only used for constructing and caching a retainer object for your activity/fragment when it is first created.
 
-Watch out for memory (especially context) leaks
+Watch out for memory (especially Context) leaks
 --------
 Marking an non-primitive field as @Retained means it won't be released when a configuration change occures.
-Watch out for memory leaks and never retain an activity/fragment or an object holding a refernce to one.
+Although Retainer makes sure at compile time that non of your @Retain fields is or is a subclass of Context, you should
+watch out for memory leaks and never retain an object holding a refernce to an android Context.
+
+When not to use
+--------
+Retainer is useful only in cases where your activty/fragment is destroyed due to a configuration change.
+If you wish to retain fields for an activity/fragment which is recreated after being destroyed by the OS then you should use the plain old savedInstanceState; I recommend taking a look at [IcePick](https://github.com/frankiesardo/icepick)
 
 License
 -------
