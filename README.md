@@ -1,6 +1,6 @@
 Retainer
 ============
-![Logo](logo.png)
+![Logo](icon/logo.png)
 An android library which enables activity/fragment fields retention through configuration changes (e.g screen rotatio) by generating boilerplate code for you.
 
  * Retain any object and maintain reference through configuration changes (no need for slow serialization-deserialization process).
