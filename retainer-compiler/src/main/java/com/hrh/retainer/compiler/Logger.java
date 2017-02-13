@@ -17,17 +17,17 @@ public class Logger {
         mEnv = processingEnvironment;
     }
 
-    void e(Element element, String message, Object... args)
+    public void e(Element element, String message, Object... args)
     {
         printMessage(Diagnostic.Kind.ERROR, element, message, args);
     }
 
-    void d(Element element, String message, Object... args)
+    public void d(Element element, String message, Object... args)
     {
         printMessage(Diagnostic.Kind.NOTE, element, message, args);
     }
 
-    void printMessage(Diagnostic.Kind kind, Element element, String message, Object[] args)
+    public void printMessage(Diagnostic.Kind kind, Element element, String message, Object[] args)
     {
         if (args.length > 0)
         {

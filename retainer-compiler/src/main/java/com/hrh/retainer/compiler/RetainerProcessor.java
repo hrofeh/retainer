@@ -2,6 +2,10 @@ package com.hrh.retainer.compiler;
 
 import com.google.auto.service.AutoService;
 import com.hrh.retainer.Retain;
+import com.hrh.retainer.compiler.enforcers.AbsEnforcer;
+import com.hrh.retainer.compiler.enforcers.ContextEnforcer;
+import com.hrh.retainer.compiler.enforcers.EnclosingClassEnforcer;
+import com.hrh.retainer.compiler.enforcers.ModifiersEnforcer;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
@@ -23,7 +27,13 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
-import static com.hrh.retainer.compiler.Utils.*;
+import static com.hrh.retainer.compiler.Utils.elementToClassName;
+import static com.hrh.retainer.compiler.Utils.elementToGenClassName;
+import static com.hrh.retainer.compiler.Utils.extractAnnotatedElements;
+import static com.hrh.retainer.compiler.Utils.getSuperClassElement;
+import static com.hrh.retainer.compiler.Utils.mapElementsToClasses;
+import static com.hrh.retainer.compiler.Utils.toAnnotationSet;
+import static com.hrh.retainer.compiler.Utils.writeClassToFile;
 
 @AutoService(Processor.class)
 public class RetainerProcessor extends AbstractProcessor {
@@ -45,7 +55,10 @@ public class RetainerProcessor extends AbstractProcessor {
     //Vars
     private static final String VAR_HOLDER = "holder";
 
+
     private Logger mLogger;
+    private AbsEnforcer[] mEnforcers;
+
 
     @SuppressWarnings("unchecked")
     @Override
@@ -65,24 +78,45 @@ public class RetainerProcessor extends AbstractProcessor {
     {
         super.init(processingEnvironment);
         mLogger = new Logger(processingEnvironment);
+        mEnforcers = new AbsEnforcer[]{
+                new ModifiersEnforcer(mLogger),
+                new EnclosingClassEnforcer(mLogger)
+                ,new ContextEnforcer(mLogger)};
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv)
     {
         Element[] elements = extractAnnotatedElements(roundEnv, Retain.class);
-        if (elements.length == 0)
+        //Verify annotated elements are valid
+        if (elements.length == 0 || !verifyElementsValid(elements))
         {
             return true;
         }
+
         Map<String, List<Element>> classNameToElements = mapElementsToClasses(elements);
         for (String className : classNameToElements.keySet())
         {
             //Generate retainer class for each class with retained elements
             List<Element> enclosedElements = classNameToElements.get(className);
-            Element superClassElement = getSuperClassElement(enclosedElements.get(0));
+            Element superClassElement = getSuperClassElement(enclosedElements.get(0).getEnclosingElement());
             boolean hasRetainerSuperClass = classNameToElements.containsKey(superClassElement.getSimpleName().toString());
             createRetainerForClass(hasRetainerSuperClass ? superClassElement : null, enclosedElements);
+        }
+        return true;
+    }
+
+    private boolean verifyElementsValid(Element[] elements)
+    {
+        for (AbsEnforcer enforcer : mEnforcers)
+        {
+            for (Element element : elements)
+            {
+                if (!enforcer.enforce(Retain.class, element))
+                {
+                    return false;
+                }
+            }
         }
         return true;
     }

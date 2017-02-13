@@ -69,9 +69,9 @@ public class Utils {
         return className + suffix;
     }
 
-    static Element getSuperClassElement(Element classElement)
+    public static Element getSuperClassElement(Element classElement)
     {
-        return ((DeclaredType) ((TypeElement) classElement.getEnclosingElement()).getSuperclass()).asElement();
+        return ((DeclaredType) ((TypeElement) classElement).getSuperclass()).asElement();
     }
 
     static ClassName elementToClassName(ProcessingEnvironment pe, Element element)
