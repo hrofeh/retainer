@@ -3,21 +3,19 @@ package com.hrh.retainer.compiler;
 import com.google.auto.service.AutoService;
 import com.hrh.retainer.Retain;
 import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.TypeVariableName;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
@@ -25,8 +23,12 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
+import static com.hrh.retainer.compiler.Utils.*;
+
 @AutoService(Processor.class)
 public class RetainerProcessor extends AbstractProcessor {
+
+    private static final String GENERATED_CLASS_SUFFIX = "Retainer";
 
     //Methods
     private static final String METHOD_RESTORE = "restore";
@@ -43,12 +45,13 @@ public class RetainerProcessor extends AbstractProcessor {
     //Vars
     private static final String VAR_HOLDER = "holder";
 
+    private Logger mLogger;
+
+    @SuppressWarnings("unchecked")
     @Override
     public Set<String> getSupportedAnnotationTypes()
     {
-        Set<String> types = new LinkedHashSet<>();
-        types.add(Retain.class.getCanonicalName());
-        return types;
+        return toAnnotationSet(Retain.class);
     }
 
     @Override
@@ -58,54 +61,50 @@ public class RetainerProcessor extends AbstractProcessor {
     }
 
     @Override
+    public synchronized void init(ProcessingEnvironment processingEnvironment)
+    {
+        super.init(processingEnvironment);
+        mLogger = new Logger(processingEnvironment);
+    }
+
+    @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv)
     {
-        Element[] elements = roundEnv.getElementsAnnotatedWith(Retain.class)
-                .toArray(new Element[0]);
+        Element[] elements = extractAnnotatedElements(roundEnv, Retain.class);
         if (elements.length == 0)
         {
             return true;
         }
-        String packageName = processingEnv.getElementUtils().getPackageOf(elements[0]).getQualifiedName().toString();
         Map<String, List<Element>> classNameToElements = mapElementsToClasses(elements);
         for (String className : classNameToElements.keySet())
         {
-            createRetainerForClass(packageName, className, classNameToElements.get(className));
+            //Generate retainer class for each class with retained elements
+            List<Element> enclosedElements = classNameToElements.get(className);
+            Element superClassElement = getSuperClassElement(enclosedElements.get(0));
+            boolean hasRetainerSuperClass = classNameToElements.containsKey(superClassElement.getSimpleName().toString());
+            createRetainerForClass(hasRetainerSuperClass ? superClassElement : null, enclosedElements);
         }
         return true;
     }
 
-    private Map<String, List<Element>> mapElementsToClasses(Element[] elements)
+    private void createRetainerForClass(Element superClassElement, List<Element> enclosedElements)
     {
-        Map<String, List<Element>> classNameToElements = new HashMap<>();
-        for (Element element : elements)
-        {
-            String className = element.getEnclosingElement().getSimpleName().toString();
-            List<Element> classElements = classNameToElements.get(className);
-            if (classElements == null)
-            {
-                classElements = new ArrayList<>();
-                classNameToElements.put(className, classElements);
-            }
-            classElements.add(element);
-        }
-        return classNameToElements;
-    }
+        Element classElement = enclosedElements.get(0).getEnclosingElement();
+        ClassName className = elementToClassName(processingEnv, classElement);
 
-
-    private void createRetainerForClass(String packageName, String className, List<Element> elements)
-    {
-        String generatedClassName = className + "Retainer";
+        //Add methods
         List<MethodSpec> methodSpecList = new ArrayList<>();
-        addRestoreMethod(packageName, className, methodSpecList, elements);
-        addRetainMethod(packageName, className, methodSpecList, elements);
-        generateRetainerClass(packageName, className, generatedClassName, methodSpecList);
+        methodSpecList.add(restoreMethod(className, superClassElement != null, enclosedElements));
+        methodSpecList.add(retainMethod(className, superClassElement != null, enclosedElements));
+
+        //Generate class
+        generateRetainerClass(className, classElement, superClassElement, methodSpecList);
     }
 
 
-    private void addRetainMethod(String packageName, String className, List<MethodSpec> methodSpecList, List<Element> elements)
+    private MethodSpec retainMethod(ClassName className, boolean hasSuper, List<Element> elements)
     {
-        MethodSpec.Builder retainBuilder = retainerMethod(METHOD_RETAIN, packageName, className)
+        MethodSpec.Builder retainBuilder = retainerMethodBuilder(METHOD_RETAIN, hasSuper, className)
                 .addStatement(String.format("RetainedFieldsMapHolder %s = " +
                                 "(RetainedFieldsMapHolder) %s.findFragmentByTag(%s.getClass().getName())",
                         VAR_HOLDER, PAR_FRAGMENT_MANAGER, PAR_TARGET))
@@ -116,12 +115,12 @@ public class RetainerProcessor extends AbstractProcessor {
                     VAR_HOLDER, element.getSimpleName(), element.getSimpleName()));
         }
         retainBuilder.endControlFlow();
-        methodSpecList.add(retainBuilder.build());
+        return retainBuilder.build();
     }
 
-    private void addRestoreMethod(String packageName, String className, List<MethodSpec> methodSpecList, List<Element> elements)
+    private MethodSpec restoreMethod(ClassName className, boolean hasSuper, List<Element> elements)
     {
-        MethodSpec.Builder retainBuilder = retainerMethod(METHOD_RESTORE, packageName, className)
+        MethodSpec.Builder retainBuilder = retainerMethodBuilder(METHOD_RESTORE, hasSuper, className)
                 .addStatement(String.format("RetainedFieldsMapHolder %s = " +
                         "($T) %s.findFragmentByTag(%s.getClass().getName())", VAR_HOLDER, PAR_FRAGMENT_MANAGER, PAR_TARGET), TYPE_RETAINED_FIELDS_MAP_HOLDER)
                 .beginControlFlow(String.format("if (%s == null)", VAR_HOLDER))
@@ -137,33 +136,62 @@ public class RetainerProcessor extends AbstractProcessor {
                     PAR_TARGET, element.getSimpleName(), VAR_HOLDER, element.getSimpleName()), element.asType());
         }
         retainBuilder.endControlFlow();
-        methodSpecList.add(retainBuilder.build());
+        return retainBuilder.build();
     }
 
-    private MethodSpec.Builder retainerMethod(String name, String packageName, String className)
+    private MethodSpec.Builder retainerMethodBuilder(String name, boolean hasSuper, ClassName className)
     {
-        return MethodSpec.methodBuilder(name)
+        MethodSpec.Builder builder = MethodSpec.methodBuilder(name)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addAnnotation(Override.class)
                 .returns(TypeName.VOID)
-                .addParameter(ClassName.get(packageName, className), PAR_TARGET)
+                .addParameter(className, PAR_TARGET)
                 .addParameter(TYPE_FRAGMENT_MANAGER, PAR_FRAGMENT_MANAGER);
+        if (hasSuper)
+        {
+            builder.addStatement(String.format("super.%s(%s,%s)", name, PAR_TARGET, PAR_FRAGMENT_MANAGER));
+        }
+        return builder;
     }
 
-    private void generateRetainerClass(String packageName, String forClass, String className, List<MethodSpec> methodSpecs)
+    private void generateRetainerClass(ClassName className, Element classElement,
+                                       Element superClassElement, List<MethodSpec> methodSpecs)
     {
-        TypeSpec typeSpec = TypeSpec.classBuilder(className)
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addSuperinterface(ParameterizedTypeName.get(ClassName.get("com.hrh.retainer", "IClassRetainer"),
-                        ClassName.get(packageName, forClass)))
-                .addMethods(methodSpecs).build();
-        try
+        TypeSpec.Builder typeSpecBuilder = TypeSpec.classBuilder(getGeneratedClassName(
+                className.simpleName()))
+                .addModifiers(Modifier.PUBLIC);
+        //Add generic type
+        String genericType = "T";
+        typeSpecBuilder.addTypeVariable(TypeVariableName.get(genericType, className));
+
+        //Define inheritance, if target don't have a retained super class just implement
+        //interface, otherwise extend superclass retainer
+        if (superClassElement != null)
         {
-            JavaFile.builder(packageName, typeSpec).build().writeTo(processingEnv.getFiler());
+            typeSpecBuilder.superclass(ParameterizedTypeName.get(
+                    elementToGenClassName(processingEnv, superClassElement, GENERATED_CLASS_SUFFIX),
+                    TypeVariableName.get(genericType)));
         }
-        catch (IOException e)
+        else
         {
-            e.printStackTrace();
+            typeSpecBuilder.addSuperinterface(ParameterizedTypeName.get(
+                    ClassName.get("com.hrh.retainer", "IClassRetainer"), TypeVariableName.get(genericType)));
+        }
+
+        //Add methods
+        typeSpecBuilder.addMethods(methodSpecs).build();
+
+        //Write to java generated source file
+        if (!writeClassToFile(processingEnv, className.packageName(), typeSpecBuilder.build()))
+        {
+            mLogger.e(classElement, "Unable to write retainer for class: %s", classElement.getSimpleName().toString());
         }
     }
+
+    private String getGeneratedClassName(String forClass)
+    {
+        return Utils.getGeneratedClassName(forClass, GENERATED_CLASS_SUFFIX);
+    }
+
+
 }

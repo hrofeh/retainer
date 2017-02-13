@@ -91,24 +91,24 @@ public final class Retainer {
         IClassRetainer retainer = RETAINERS.get(cls);
         if (retainer != null)
         {
-            log("Found cached retainer for " + cls.getSimpleName());
+            log("Found cached retainer for: " + cls.getSimpleName());
             return retainer;
         }
         String clsName = cls.getName();
         if (clsName.startsWith("android.") || clsName.startsWith("java."))
         {
-            log("Reached non-user class, stopping retainer search for " + originClass.getSimpleName());
+            log("Reached non-user class, stopping retainer search for: " + originClass.getSimpleName());
             return null;
         }
         try
         {
             Class<?> retainerClass = Class.forName(clsName + "Retainer");
             retainer = constructRetainer(retainerClass.getConstructor());
-            log("Found and constructed retainer for " + cls.getSimpleName());
+            log("Found and constructed retainer for: " + cls.getSimpleName());
         }
         catch (ClassNotFoundException e)
         {
-            log("Retainer not found for " + clsName + ", proceeding to superclass " + cls.getSuperclass().getName());
+            log("Retainer not found for: " + clsName + ", proceeding to superclass " + cls.getSuperclass().getName());
             retainer = findOrCreateRetainerForClass(originClass, cls.getSuperclass());
         }
         catch (NoSuchMethodException e)
