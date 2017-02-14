@@ -36,8 +36,8 @@ Download
 
 ```groovy
 dependencies {
-  compile 'com.hrh:retainer:[latest-version]'
-  annotationProcessor 'com.hrh:retainer-compiler:[latest-version]'
+  compile 'com.hrh:retainer:0.0.56'
+  annotationProcessor 'com.hrh:retainer-compiler:0.0.56'
 }
 ```
 
