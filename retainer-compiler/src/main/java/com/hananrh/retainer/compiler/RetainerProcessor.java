@@ -1,11 +1,11 @@
-package com.hrh.retainer.compiler;
+package com.hananrh.retainer.compiler;
 
 import com.google.auto.service.AutoService;
-import com.hrh.retainer.Retain;
-import com.hrh.retainer.compiler.enforcers.AbsEnforcer;
-import com.hrh.retainer.compiler.enforcers.ContextEnforcer;
-import com.hrh.retainer.compiler.enforcers.EnclosingClassEnforcer;
-import com.hrh.retainer.compiler.enforcers.ModifiersEnforcer;
+import com.hananrh.retainer.Retain;
+import com.hananrh.retainer.compiler.enforcers.AbsEnforcer;
+import com.hananrh.retainer.compiler.enforcers.ContextEnforcer;
+import com.hananrh.retainer.compiler.enforcers.EnclosingClassEnforcer;
+import com.hananrh.retainer.compiler.enforcers.ModifiersEnforcer;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
@@ -27,16 +27,18 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
-import static com.hrh.retainer.compiler.Utils.elementToClassName;
-import static com.hrh.retainer.compiler.Utils.elementToGenClassName;
-import static com.hrh.retainer.compiler.Utils.extractAnnotatedElements;
-import static com.hrh.retainer.compiler.Utils.getSuperClassElement;
-import static com.hrh.retainer.compiler.Utils.mapElementsToClasses;
-import static com.hrh.retainer.compiler.Utils.toAnnotationSet;
-import static com.hrh.retainer.compiler.Utils.writeClassToFile;
+import static com.hananrh.retainer.compiler.Utils.elementToClassName;
+import static com.hananrh.retainer.compiler.Utils.elementToGenClassName;
+import static com.hananrh.retainer.compiler.Utils.extractAnnotatedElements;
+import static com.hananrh.retainer.compiler.Utils.getSuperClassElement;
+import static com.hananrh.retainer.compiler.Utils.mapElementsToClasses;
+import static com.hananrh.retainer.compiler.Utils.toAnnotationSet;
+import static com.hananrh.retainer.compiler.Utils.writeClassToFile;
 
 @AutoService(Processor.class)
 public class RetainerProcessor extends AbstractProcessor {
+
+    private static final String PACKAGE_NAME = "com.hananrh.retainer";
 
     private static final String GENERATED_CLASS_SUFFIX = "Retainer";
 
@@ -46,7 +48,7 @@ public class RetainerProcessor extends AbstractProcessor {
 
     //Types
     private static final ClassName TYPE_FRAGMENT_MANAGER = ClassName.get("android.support.v4.app", "FragmentManager");
-    private static final ClassName TYPE_RETAINED_FIELDS_MAP_HOLDER = ClassName.get("com.hrh.retainer", "RetainedFieldsMapHolder");
+    private static final ClassName TYPE_RETAINED_FIELDS_MAP_HOLDER = ClassName.get(PACKAGE_NAME, "RetainedFieldsMapHolder");
 
     //Parameters
     private static final String PAR_TARGET = "target";
@@ -209,7 +211,7 @@ public class RetainerProcessor extends AbstractProcessor {
         else
         {
             typeSpecBuilder.addSuperinterface(ParameterizedTypeName.get(
-                    ClassName.get("com.hrh.retainer", "IClassRetainer"), TypeVariableName.get(genericType)));
+                    ClassName.get(PACKAGE_NAME, "IClassRetainer"), TypeVariableName.get(genericType)));
         }
 
         //Add methods

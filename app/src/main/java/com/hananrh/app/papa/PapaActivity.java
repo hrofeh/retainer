@@ -1,9 +1,9 @@
-package com.hrh.app.papa;
+package com.hananrh.app.papa;
 
 import android.os.Bundle;
 
-import com.hrh.app.grandpa.GrandpaActivity;
-import com.hrh.retainer.Retain;
+import com.hananrh.app.grandpa.GrandpaActivity;
+import com.hananrh.retainer.Retain;
 
 /**
  * Created by Hanan on 2/13/2017.
