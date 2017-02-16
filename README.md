@@ -49,7 +49,7 @@ In order to keep runtime impact minimal, Retainer uses mostly code generation wh
 
 Watch out for memory (especially Context) leaks
 --------
-Marking an non-primitive field as @Retained means it won't be released when a configuration change occures.
+Marking a non-primitive field as @Retained means it won't be released when a configuration change occures.
 
 Although Retainer makes sure at compile time that non of your @Retain fields is or is a subclass of Context, you should
 watch out for memory leaks and never retain an object holding a refernce to an android Context.
