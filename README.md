@@ -12,7 +12,7 @@ An android library which enables activity/fragment fields retention through conf
 class MainActivity extends AppCompatActivity{
 
     @Retain
-    ViewModel mViewModel;
+    ViewModel mViewModel; //This field will be retained through configuration changes
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -27,6 +27,8 @@ class MainActivity extends AppCompatActivity{
         super.onSaveInstanceState(outState);
         Retainer.retain(this);
     }
+    
+    //Calls to retain() and restore() can be made from a base activity class
 }
 
 ```
